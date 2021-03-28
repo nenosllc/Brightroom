@@ -32,16 +32,31 @@ public typealias PixelEditViewController = ClassicImageEditViewController
 
 public final class ClassicImageEditViewController: UIViewController {
   
+  /**
+   - TODO: property names are not comprehensibility.
+   */
   public struct LocalizedStrings {
     
-    public static var shared: Self = .init()
-  
+    // Deprecates
+    
+    @available(*, deprecated, renamed: "control_colorcube_normal_name")
+    public var normal: String {
+      get {
+        control_colorcube_normal_name
+      }
+      set {
+        control_colorcube_normal_name = newValue
+      }
+    }
+
     public var done = "Done"
-    public var normal = "Normal"
+          
+    public var control_colorcube_normal_name = "Normal"
+    
     public var cancel = "Cancel"
     public var filter = "Filter"
     public var edit = "Edit"
-    
+
     public var editAdjustment = "Adjust"
     public var editMask = "Mask"
     public var editHighlights = "Highlights"
@@ -58,12 +73,10 @@ public final class ClassicImageEditViewController: UIViewController {
     public var brushSizeSmall = "◦"
     public var brushSizeLarge = "◯"
     public var clear = "Clear"
-    
-    public init() {
-      
-    }
+
+    public init() {}
   }
-      
+
   public struct Handlers {
     public var didEndEditing: (ClassicImageEditViewController, EditingStack) -> Void = { _, _ in }
     public var didCancelEditing: (ClassicImageEditViewController) -> Void = { _ in }
@@ -76,7 +89,7 @@ public final class ClassicImageEditViewController: UIViewController {
   private let maskingView: BlurryMaskingView
 
   private let previewView: ImagePreviewView
-  
+
   private let cropView: CropView
 
   private let editContainerView = UIView()
@@ -88,14 +101,14 @@ public final class ClassicImageEditViewController: UIViewController {
   private let stackView = ClassicImageEditControlStackView()
 
   private lazy var doneButton = UIBarButtonItem(
-    title: viewModel.doneButtonTitle,
+    title: viewModel.localizedStrings.done,
     style: .done,
     target: self,
     action: #selector(didTapDoneButton)
   )
 
   private lazy var cancelButton = UIBarButtonItem(
-    title: ClassicImageEditViewController.LocalizedStrings.shared.cancel,
+    title: viewModel.localizedStrings.cancel,
     style: .plain,
     target: self,
     action: #selector(didTapCancelButton)
@@ -103,33 +116,49 @@ public final class ClassicImageEditViewController: UIViewController {
 
   private var subscriptions: Set<VergeAnyCancellable> = .init()
 
-  private lazy var loadingView = LoadingBlurryOverlayView(effect: UIBlurEffect(style: .dark), activityIndicatorStyle: .whiteLarge)
+  private lazy var loadingView = LoadingBlurryOverlayView(
+    effect: UIBlurEffect(style: .dark),
+    activityIndicatorStyle: .whiteLarge
+  )
   private lazy var touchGuardOverlayView = UIView()
 
   private let viewModel: ClassicImageEditViewModel
-  
+
   // MARK: - Initializers
-  
-  public convenience init(imageProvider: ImageProvider) {
-    
+
+  public convenience init(
+    imageProvider: ImageProvider,
+    options: ClassicImageEditOptions = .default,
+    localizedStrings: LocalizedStrings = .init()
+  ) {
     let editingStack = EditingStack(imageProvider: imageProvider)
-    let viewModel = ClassicImageEditViewModel(editingStack: editingStack)
-    
-    self.init(viewModel: viewModel)
+
+    self.init(
+      editingStack: editingStack,
+      options: options,
+      localizedStrings: localizedStrings
+    )
   }
-  
-  public convenience init(editingStack: EditingStack) {
-    
-    let viewModel = ClassicImageEditViewModel(editingStack: editingStack)
-    
-    self.init(viewModel: viewModel)
+
+  public convenience init(
+    editingStack: EditingStack,
+    options: ClassicImageEditOptions = .default,
+    localizedStrings: LocalizedStrings = .init()
+  ) {
+    self.init(
+      viewModel: .init(
+        editingStack: editingStack,
+        options: options,
+        localizedStrings: localizedStrings
+      )
+    )
   }
 
   public init(viewModel: ClassicImageEditViewModel) {
     self.viewModel = viewModel
-    self.cropView = .init(editingStack: viewModel.editingStack, contentInset: .zero)
-    self.previewView = .init(editingStack: viewModel.editingStack)
-    self.maskingView = .init(editingStack: viewModel.editingStack)
+    cropView = .init(editingStack: viewModel.editingStack, contentInset: .zero)
+    previewView = .init(editingStack: viewModel.editingStack)
+    maskingView = .init(editingStack: viewModel.editingStack)
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -141,21 +170,19 @@ public final class ClassicImageEditViewController: UIViewController {
   // MARK: - Functions
 
   override public func viewDidLoad() {
-    
     // FIXME: Check loading
-    
+
     super.viewDidLoad()
-    
+
     cropView.setCropOutsideOverlay(.init()&>.do {
       $0.backgroundColor = .white
     })
     cropView.setCropInsideOverlay(nil)
     cropView.isGuideInteractionEnabled = false
     cropView.isAutoApplyEditingStackEnabled = false
-    
-    // FIXME: Demo
-    cropView.setCroppingAspectRatio(.square)
-    
+
+    cropView.setCroppingAspectRatio(viewModel.options.croppingAspectRatio)
+
     maskingView.isBackdropImageViewHidden = true
 
     layout: do {
@@ -246,7 +273,7 @@ public final class ClassicImageEditViewController: UIViewController {
         stackView.autoresizingMask = [.flexibleHeight, .flexibleWidth]
       }
     }
-    
+
     stackView.push(
       viewModel.options.classes.control.rootControl.init(
         viewModel: viewModel,
@@ -256,32 +283,32 @@ public final class ClassicImageEditViewController: UIViewController {
       ),
       animated: false
     )
-   
+
     viewModel.sinkState(queue: .mainIsolated()) { [weak self] state in
-      
+
       guard let self = self else { return }
-      
+
       self.updateUI(state: state)
     }
     .store(in: &subscriptions)
-    
-    cropView.store.sinkState { [viewModel] (state) in
-            
+
+    cropView.store.sinkState { [viewModel] state in
+
       state.ifChanged(\.proposedCrop) { value in
         guard let value = value else { return }
         viewModel.setProposedCrop(value)
       }
     }
     .store(in: &subscriptions)
-           
+
     viewModel.editingStack.start()
   }
-  
-  public override func viewWillAppear(_ animated: Bool) {
+
+  override public func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
     view.layoutIfNeeded()
   }
-  
+
   // MARK: - Private Functions
 
   @objc
@@ -295,16 +322,19 @@ public final class ClassicImageEditViewController: UIViewController {
   }
 
   private func updateUI(state: Changes<ClassicImageEditViewModel.State>) {
- 
+    state.ifChanged(\.title) { title in
+      navigationItem.title = title
+    }
+
     state.ifChanged(\.maskingBrushSize) {
       maskingView.setBrushSize($0)
     }
-    
+
     state.ifChanged(\.proposedCrop) { value in
       guard let value = value else { return }
       cropView.setCrop(value)
     }
-    
+
     state.ifChanged(\.mode) { mode in
       switch mode {
       case .crop:
@@ -314,7 +344,10 @@ public final class ClassicImageEditViewController: UIViewController {
 
         cropView.isHidden = false
         previewView.isHidden = true
+        
         maskingView.isHidden = true
+        maskingView.isblurryImageViewHidden = true
+        
         maskingView.isUserInteractionEnabled = false
 
       case .masking:
@@ -325,6 +358,7 @@ public final class ClassicImageEditViewController: UIViewController {
         cropView.isHidden = true
         previewView.isHidden = false
         maskingView.isHidden = false
+        maskingView.isblurryImageViewHidden = false
 
         maskingView.isUserInteractionEnabled = true
 
@@ -336,6 +370,7 @@ public final class ClassicImageEditViewController: UIViewController {
         cropView.isHidden = true
         previewView.isHidden = false
         maskingView.isHidden = true
+        maskingView.isblurryImageViewHidden = true
 
         maskingView.isUserInteractionEnabled = false
 
@@ -348,14 +383,14 @@ public final class ClassicImageEditViewController: UIViewController {
         previewView.isHidden = false
         cropView.isHidden = true
         maskingView.isHidden = false
+        maskingView.isblurryImageViewHidden = false
 
         maskingView.isUserInteractionEnabled = false
       }
-
     }
 
     let editingState = state.map(\.editingState)
-               
+
     editingState.ifChanged(\.isLoading) { isLoading in
 
       switch isLoading {
@@ -390,5 +425,4 @@ public final class ClassicImageEditViewController: UIViewController {
       }
     }
   }
-
 }

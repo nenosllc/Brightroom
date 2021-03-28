@@ -21,13 +21,22 @@
 
 import UIKit
 
+#if !COCOAPODS
+import BrightroomEngine
+#endif
+
 public struct ClassicImageEditOptions {
   
   public static let `default`: ClassicImageEditOptions = .init()
   
   public static var current: ClassicImageEditOptions = .init()
   
+  public var croppingAspectRatio: PixelAspectRatio? = .square
+  public var isFaceDetectionEnabled: Bool = false
+  
   public var classes: Classes = .init()
+  
+  public init() {}
 }
 
 extension ClassicImageEditOptions {

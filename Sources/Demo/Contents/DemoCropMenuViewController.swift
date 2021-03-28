@@ -107,7 +107,6 @@ final class DemoCropMenuViewController: StackScrollNodeViewController {
         
         let stack = EditingStack(
           imageProvider: .init(
-//            previewRemoteURL: URL(string: "https://images.unsplash.com/photo-1597522781074-9a05ab90638e?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=125&q=80")!,
             editableRemoteURL: URL(string: "https://images.unsplash.com/photo-1597522781074-9a05ab90638e?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D")!
           )
         )
@@ -184,10 +183,17 @@ final class DemoCropMenuViewController: StackScrollNodeViewController {
       controller.dismiss(animated: true, completion: nil)
       self?.resultCell.image = nil
 
-      controller.editingStack.makeRenderer()?.render { [weak self] image in
-        self?.resultCell.image = image
-      }
+      try! controller.editingStack.makeRenderer()
+        .render { (result) in
+          switch result {
+          case .success(let rendered):
+            self?.resultCell.image = rendered.uiImageDisplayP3
+          case .failure(let error):
+            print(error)
+          }
+        }
     }
+      
     present(crop, animated: true, completion: nil)
   }
 

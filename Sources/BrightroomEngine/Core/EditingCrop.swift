@@ -111,11 +111,11 @@ public struct EditingCrop: Equatable {
     return new
   }
   
-  public func restoreFromScaled() -> Self {
-    var s = scaled(scaleToRestore)
-    s.scaleToRestore = 1
-    return s
-  }
+//  public func restoreFromScaled() -> Self {
+//    var s = scaled(scaleToRestore)
+//    s.scaleToRestore = 1
+//    return s
+//  }
   
   private func scaled(_ scale: CGFloat) -> Self {
     
@@ -135,8 +135,8 @@ public struct EditingCrop: Equatable {
     imageSize.height.round(.down)
     
     // TODO: Consider
-//    modified.cropExtent = Self.normalizeRect(rect: cropExtent, in: imageSize, respectingAspectRatio: nil)
-    modified.cropExtent = cropExtent
+    modified.cropExtent = Self.fittingRect(rect: cropExtent, in: imageSize, respectingAspectRatio: nil)
+//    modified.cropExtent = cropExtent
     modified.imageSize = imageSize
            
     return modified
@@ -231,7 +231,6 @@ public struct EditingCrop: Equatable {
     
     validation: do {
       
-      // FIXME:
       assert(fixed.maxX <= imageSize.width)
       assert(fixed.maxY <= imageSize.height)
       
@@ -265,4 +264,19 @@ public struct EditingCrop: Equatable {
     return path
   }
    */
+}
+
+extension CIImage {
+  func cropped(to _cropRect: EditingCrop) -> CIImage {
+    
+    let targetImage = self
+    var cropRect = _cropRect.cropExtent
+    
+    cropRect.origin.y = targetImage.extent.height - cropRect.minY - cropRect.height
+    
+    let croppedImage = targetImage
+      .cropped(to: cropRect)
+    
+    return croppedImage
+  }
 }

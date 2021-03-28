@@ -1,25 +1,29 @@
-## ⚠️ v2 development is in progress. 
+## 🎉 v2.0.0-alpha.1 now open!
 
-> 💥 Development for the next major version (v2) has started!
-> Find out more [here](https://github.com/muukii/Pixel/pull/53), and if you're excited please hit the reaction button! 
->
-> This update will obviously include many breaking changes. Feel free to start a discussion. I often upload movies of features in development to the pull-request's comments.
-> 
-> To use the stable version, please checkout the master branch.
-> 
+> 💥 v2.0.0 development is still early development. We have a lot of known issues.
 
-> 📌 Pixel needs a new name! Post your idea [here](https://github.com/muukii/Pixel/discussions/68). The leading name right now is **BrightRoom**?
+> ⚒ Issues are managed in [v2 project](https://github.com/muukii/Brightroom/projects/2)
+
+> 📌 Pixel has been renamed as **Brightroom**
+
+> ⭐️ If you interested in v2, hit the **Star button** to motivate us! 🤠
 
 ---
 
 # v2(WIP) Brightroom(former: Pixel) - Composable image editor
 
+<img src=top.png width=100%/>
+
 Pixel v2 provides the following features:
 - Components are built separately and run standalone using an `EditingStack`.
 - Create your own image editor UI by composing components.
 - `EditingStack` manages the history of editing and renders images. It's like a headless browser.
+- Wide color editing support
 
 ## Built-in UI - Fullstack image editor
+
+
+![](preview.gif)
 
 - [ ] TODO
 
@@ -134,18 +138,22 @@ Make sure to use HALD 64 SIZE. Currently, CIColorCube supports dimension is up t
 
 ## Installation
 
+> ⚠️ Brightroom has not been published in CocoaPods since it's still early development.
+> If you try to use it, following pod commands install libraries to your application.
+
 **CocoaPods**
 
 ```ruby
-pod "Brightroom/Engine", git: "git@github.com:muukii/Brightroom", branch: "muukii/v2"
-pod "Brightroom/UI", git: "git@github.com:muukii/Brightroom", branch: "muukii/v2"
+pod "Brightroom/Engine", "2.0.0-alpha.1"
+pod "Brightroom/UI-Classic", "2.0.0-alpha.1"
+pod "Brightroom/UI-Crop", "2.0.0-alpha.1"
 ```
 
 **Swift Package Manager**
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/muukii/Brightroom.git", branch: "muukii/v2")
+    .package(url: "https://github.com/muukii/Brightroom.git", exact: "2.0.0-alpha.1")
 ]
 ```
 

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018 Muukii <muukii.app@gmail.com>
+// Copyright (c) 2021 Hiroshi Kimura(Muukii) <muukii.app@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,9 +19,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import CoreGraphics
+import CoreImage
 
-public protocol GraphicsDrawing {
-
-  func draw(in context: CGContext)
+extension CIImage {
+  
+  public func removingExtentOffset() -> CIImage {
+    transformed(
+      by: .init(
+        translationX: -extent.origin.x,
+        y: -extent.origin.y
+      ))
+  }
 }

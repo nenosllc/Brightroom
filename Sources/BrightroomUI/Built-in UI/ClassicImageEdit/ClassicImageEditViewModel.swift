@@ -58,17 +58,27 @@ public final class ClassicImageEditViewModel: Equatable, StoreComponentType {
 
   private var subscriptions: Set<VergeAnyCancellable> = .init()
 
-  public let doneButtonTitle: String
+  public let localizedStrings: ClassicImageEditViewController.LocalizedStrings
 
   public init(
     editingStack: EditingStack,
-    doneButtonTitle: String = ClassicImageEditViewController.LocalizedStrings.shared.done,
-    options: ClassicImageEditOptions = .default
+    options: ClassicImageEditOptions,
+    localizedStrings: ClassicImageEditViewController.LocalizedStrings
   ) {
-    self.doneButtonTitle = doneButtonTitle
+    self.localizedStrings = localizedStrings
     self.options = options
     self.editingStack = editingStack
     store = .init(initialState: .init(editingState: editingStack.state))
+
+    if options.isFaceDetectionEnabled {
+      editingStack.cropModifier = .faceDetection(aspectRatio: options.croppingAspectRatio)
+    } else if let aspectRatio = options.croppingAspectRatio {
+      editingStack.cropModifier = .init { image, crop, completion in
+        var new = crop
+        new.updateCropExtentIfNeeded(by: aspectRatio)
+        completion(new)
+      }
+    }
 
     editingStack.assign(to: assignee(\.editingState)).store(in: &subscriptions)
   }
@@ -85,9 +95,9 @@ public final class ClassicImageEditViewModel: Equatable, StoreComponentType {
 
       switch mode {
       case .crop:
-        $0.title = ClassicImageEditViewController.LocalizedStrings.shared.editAdjustment
+        $0.title = localizedStrings.editAdjustment
       case .masking:
-        $0.title = ClassicImageEditViewController.LocalizedStrings.shared.editMask
+        $0.title = localizedStrings.editMask
       case .editing:
         break
       case .preview:
