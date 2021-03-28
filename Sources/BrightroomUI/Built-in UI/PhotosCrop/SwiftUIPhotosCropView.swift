@@ -25,34 +25,37 @@ import SwiftUI
 import BrightroomEngine
 #endif
 
-/**
- Apple's Photos app like crop view controller.
- 
- You might use `CropView` to create a fully customized user interface.
- */
+/// Apple's Photos app-like crop view controller.
+///
+/// - note: Use the new `CropView` to create a fully customized UI.
+///
 @available(iOS 13, *)
 public struct SwiftUIPhotosCropView: UIViewControllerRepresentable {
-  public typealias UIViewControllerType = PhotosCropViewController
-  
-  private let editingStack: EditingStack
-  private let onCompleted: () -> Void
-  
-  public init(editingStack: EditingStack, onCompleted: @escaping () -> Void) {
-    self.editingStack = editingStack
-    self.onCompleted = onCompleted
-    editingStack.start()
-  }
-  
-  public func makeUIViewController(context: Context) -> PhotosCropViewController {
-    let cropViewController = PhotosCropViewController(editingStack: editingStack)
-    cropViewController.handlers.didFinish = { _ in
-      onCompleted()
+    
+    public typealias UIViewControllerType = PhotosCropViewController
+    
+    private let editingStack: EditingStack
+    private let onCompleted: () -> Void
+    
+    public init(editingStack: EditingStack, onCompleted: @escaping () -> Void) {
+        self.editingStack = editingStack
+        self.onCompleted = onCompleted
+        editingStack.start()
     }
-    cropViewController.handlers.didCancel = { _ in
-      onCompleted()
+    
+    public func makeUIViewController(context: Context) -> PhotosCropViewController {
+        let cropViewController = PhotosCropViewController(editingStack: editingStack)
+        cropViewController.handlers.didFinish = { _ in
+            onCompleted()
+        }
+        cropViewController.handlers.didCancel = { _ in
+            onCompleted()
+        }
+        return cropViewController
     }
-    return cropViewController
-  }
-  
-  public func updateUIViewController(_ uiViewController: PhotosCropViewController, context: Context) {}
+    
+    public func updateUIViewController(_ uiViewController: PhotosCropViewController, context: Context) {
+        
+    }
+    
 }

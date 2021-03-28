@@ -193,7 +193,6 @@ public struct PixelAspectRatio: Hashable {
   }
   
   public func sizeThatFits(in boundingSize: CGSize) -> CGSize {
-    
     let widthRatio = boundingSize.width / width
     let heightRatio = boundingSize.height / height
     var size = boundingSize
