@@ -74,7 +74,7 @@ public struct SwiftUICropView: UIViewControllerRepresentable {
     let view = factory()
     view.isAutoApplyEditingStackEnabled = true
     
-    let controller = _PixelEditor_WrapperViewController.init(bodyView: view)
+    let controller = _PixelEditor_WrapperViewController(bodyView: view)
     
     if let cropInsideOverlay = cropInsideOverlay {
       

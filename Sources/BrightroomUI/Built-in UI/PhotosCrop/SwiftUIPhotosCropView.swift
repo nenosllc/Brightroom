@@ -35,16 +35,23 @@ public struct SwiftUIPhotosCropView: UIViewControllerRepresentable {
     public typealias UIViewControllerType = PhotosCropViewController
     
     private let editingStack: EditingStack
+    private let options: PhotosCropViewController.Options?
     private let onCompleted: () -> Void
     
-    public init(editingStack: EditingStack, onCompleted: @escaping () -> Void) {
+    public init(editingStack: EditingStack, options: PhotosCropViewController.Options? = nil, onCompleted: @escaping () -> Void) {
         self.editingStack = editingStack
         self.onCompleted = onCompleted
+        self.options = options
         editingStack.start()
     }
     
     public func makeUIViewController(context: Context) -> PhotosCropViewController {
-        let cropViewController = PhotosCropViewController(editingStack: editingStack)
+        var optionsToPass = options
+        if optionsToPass == nil {
+            optionsToPass = .init()
+        }
+        
+        let cropViewController = PhotosCropViewController(editingStack: editingStack, options: optionsToPass!)
         cropViewController.handlers.didFinish = { _ in
             onCompleted()
         }

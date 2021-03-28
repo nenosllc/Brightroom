@@ -418,9 +418,8 @@ public final class CropView: UIView, UIScrollViewDelegate {
      Displays an overlay that covers the area out of cropping extent.
      Given view's frame would be adjusted automatically.
      
-     - Attention: view's userIntereactionEnabled turns off
-     - Parameters:
-     - view: In case of no needs to display overlay, pass nil.
+     - attention: view's userIntereactionEnabled turns off
+     - parameter view: In case of no needs to display overlay, pass nil.
      */
     public func setCropOutsideOverlay(_ view: CropOutsideOverlayBase?) {
         _pixeleditor_ensureMainThread()
